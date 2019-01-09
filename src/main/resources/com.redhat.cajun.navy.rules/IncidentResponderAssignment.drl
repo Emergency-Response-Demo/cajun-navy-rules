@@ -1,6 +1,5 @@
 package com.redhat.cajun.navy.rules;
 
-
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScoreHolder;
 
 global HardSoftScoreHolder scoreHolder;

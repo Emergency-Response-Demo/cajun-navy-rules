@@ -28,6 +28,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         //TODO - @justin - fill out params for a scenario
         Responder responderA = new Responder();
+        responderA.setFullname( "Joe Bob" );
 
         //TODO - @justin - fill out params for a scenario
         Responder responderB = new Responder();
