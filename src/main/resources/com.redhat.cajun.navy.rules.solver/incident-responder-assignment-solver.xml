@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This configuration should probably be abstracted or moved into the application code somehow -->
+<solver>
+
+
+    <scanAnnotatedClasses>
+        <packageInclude>com.redhat.cajun.navy.rules.model</packageInclude>
+    </scanAnnotatedClasses>
+
+    <scoreDirectorFactory>
+        <ksessionName>cajun-navy-ksession</ksessionName>
+    </scoreDirectorFactory>
+
+    <termination>
+        <millisecondsSpentLimit>100</millisecondsSpentLimit>
+    </termination>
+
+    <!-- These tweak the optimization algorithms -->
+    <constructionHeuristic />
+    <localSearch />
+
+</solver>
+
