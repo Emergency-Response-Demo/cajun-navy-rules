@@ -6,8 +6,8 @@ import static com.redhat.cajun.navy.rules.test.util.DistanceHelper.longitude;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,38 +35,45 @@ public class IncidentResponderAssignmentRulesTest {
     @Test
     @DisplayName( "My first test" )
     public void myExampleTest() {
-        Incident i1 = new Incident();
-        i1.setId( 1 );
-        i1.setNumPeople( 2 );
-        i1.setMedicalNeeded( true );
-        i1.setReportedTime( ZonedDateTime.now( ZoneId.systemDefault() ) ); //TODO - @michael - need to find the code for my utility class for handling datetime
-        i1.setLatitude( latitude( 34.210383 ) );
-        i1.setLongitude( longitude( -77.886765 ) );
-        i1.setReporterId( 1 );
 
-        Incident i2 = new Incident();
-        i2.setId( 2 );
-        i2.setNumPeople( 3 );
-        i2.setMedicalNeeded( true );
-        i2.setReportedTime( ZonedDateTime.now( ZoneId.systemDefault() ) ); //TODO - @michael - need to find the code for my utility class for handling datetime
-        i2.setLatitude( latitude( 34.210383 ) );
-        i2.setLongitude( longitude( -77.886765 ) );
-        i2.setReporterId( 2 );
-
-        Responder responder = new Responder();
-        responder.setId( 1 );
-        responder.setFullname( "Donald Duck" );
-        responder.setBoatCapacity( 5 );
-        responder.setHasMedical( true );
-        responder.setLatitude( latitude( 34.210383 ) );
-        responder.setLongitude( longitude( -77.886765 ) );
-        responder.setPhoneNumber( "555-555-5555" );
+        List<Incident> incidents = new ArrayList<>();
+        for (int i = 0; i < Incidents.latitudes.length; i++) {
+        	Incident incident = new Incident();
+        	incident.setId( i + 1 );
+        	incident.setNumPeople( ThreadLocalRandom.current().nextInt(1, 6 ));
+        	Integer medicalNeeded = ThreadLocalRandom.current().nextInt(1, 3);
+        	incident.setMedicalNeeded( (medicalNeeded == 1) ? true : false );
+        	incident.setReportedTime( ZonedDateTime.now( ZoneId.systemDefault() ) ); //TODO - @michael - need to find the code for my utility class for handling datetime
+        	incident.setLatitude( latitude( Incidents.latitudes[i] ) );
+        	incident.setLongitude( longitude( Incidents.longitudes[i] ) );
+        	incident.setReporterId( i + 1 );
+        	incidents.add( incident );
+        	
+        	LOG.info(incident.toString());
+        }
+        
+        List<Responder> responders = new ArrayList<>();
+        for (int i = 0; i < Responders.latitudes.length; i++) {
+        	Responder responder = new Responder();
+            responder.setId( i + 1 );
+            responder.setFullname( Responders.names[i] );
+            responder.setBoatCapacity( ThreadLocalRandom.current().nextInt(1, 8) );
+        	Integer hasMedical = ThreadLocalRandom.current().nextInt(1, 3);
+            responder.setHasMedical( (hasMedical == 1) ? true : false );
+            responder.setLatitude( latitude( Responders.latitudes[i] ) );
+            responder.setLongitude( longitude( Responders.longitudes[i] ) );
+            responder.setPhoneNumber( "555-555-5555" );
+            responders.add( responder );
+            
+            LOG.info(responder.toString());
+        }
 
         //TODO - @michael - use the adapter lib!!!! https://gitlab.consulting.redhat.com/na-business-automation-practice/business-automation-api-adapters
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession" );
 
         List<Command<?>> commands = new ArrayList<>();
-        commands.add( CommandFactory.newInsertElements( Arrays.asList( i1, i2, responder ) ) );
+        commands.add( CommandFactory.newInsertElements( incidents ) );
+        commands.add( CommandFactory.newInsertElements( responders ) );
         commands.add( CommandFactory.newFireAllRules() );
         commands.add( CommandFactory.newGetObjects( new ClassObjectFilter( Mission.class ), "mission" ) );
 
