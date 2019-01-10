@@ -1,7 +1,7 @@
 <kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.drools.org/xsd/kmodule">
 
     <kbase name="cajun-navy-kbase" default="true" packages="com.redhat.cajun.navy.rules">
-        <ksession name="cajun-navy-ksession" default="true" />
+        <ksession name="cajun-navy-ksession" default="true" type="stateless" />
     </kbase>
 
 </kmodule>

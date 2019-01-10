@@ -14,6 +14,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>com.redhat.cajun.navy</groupId>
+            <artifactId>cajun-navy-rules-model</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-api</artifactId>
             <scope>test</scope>
@@ -24,9 +30,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.optaplanner</groupId>
-            <artifactId>optaplanner-core</artifactId>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-core</artifactId>
+            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.slf4j</groupId>
