@@ -2,6 +2,8 @@ package com.redhat.cajun.navy.rules;
 
 import java.util.List;
 
+import com.redhat.cajun.navy.rules.DistanceHelper;
+
 import com.redhat.cajun.navy.rules.model.CommanderOverride;
 import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
@@ -19,7 +21,17 @@ rule "Create the Mission Assignments"
         $responder : Responder()
         not MissionAssignment( responder == $responder, incident == $incident )
     then
-        insert( new MissionAssignment( $incident, $responder ) );
+    	if ( $incident.getLatitude() == null || $incident.getLongitude() == null || 
+    	     $responder.getLatitude() == null || $responder.getLongitude() == null ) {
+        	insert( new MissionAssignment( $incident, $responder ) );
+        }
+        else {
+        	double distance = DistanceHelper.calculateDistance( $incident.getLatitude(),
+        	                                                    $responder.getLatitude(),
+        	                                                    $incident.getLongitude(),
+        	                                                    $responder.getLongitude());
+        	insert( new MissionAssignment( $incident, $responder, distance ) );
+        }
 end
 
 rule "The Responder can provide medical assitance"
@@ -58,6 +70,38 @@ rule "The Responder can fit the EXACT number of people on their boat"
 
 end
 
+rule "Responder is 0 to 5km away from Incident"
+	when
+		$missionAssignment : MissionAssignment ( distance <= 5000 )
+	then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 100 );
+end
+
+rule "Responder is 5km to 10km away from Incident"
+	when
+		$missionAssignment : MissionAssignment ( distance > 5000 && distance <= 10000 )
+	then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 75 );
+end
+
+rule "Responder is 10km to 15km away from Incident"
+	when
+		$missionAssignment : MissionAssignment ( distance > 10000 && distance <= 15000 )
+	then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 50 );
+end
+
+rule "Responder is more than 15 away from Incident"
+	when
+		$missionAssignment : MissionAssignment ( distance > 15000 )
+	then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 25 );
+end
+
 rule "Collect the Mission Assignments for Processing"
 	salience -100
 	when
@@ -85,4 +129,15 @@ rule "Assign the top mission"
 		$assignments : PotentialMissionAssignments( prioritized == true )
 	then
 		insert( $assignments.getAssignedMission() );
+end
+
+rule "debug"
+	salience -1000
+	enabled false
+	when
+		$ma : MissionAssignment()
+	then
+		System.out.println("Mission Assignment: Incident.id = " + $ma.getIncident().getId() + ", Responder.id = " + 
+		                   $ma.getResponder().getId() + ", distance = " + $ma.getDistance() + ", score = " + $ma.getCompatibilityScore());
+		//System.out.println($ma.toString());
 end
