@@ -86,14 +86,3 @@ rule "Assign the top mission"
 	then
 		insert( $assignments.getAssignedMission() );
 end
-
-rule "DEBUG - Print Mission Weights -- REMOVE LATER"
-	salience -1000
-	when
-		$m : Mission( $incId : incidentId, respId : responderId )
-		$i : Incident( id == $incId )
-		$ma : MissionAssignment( incident == $i )
-	then
-		System.out.println( $m );
-		System.out.println( $ma );
-end
