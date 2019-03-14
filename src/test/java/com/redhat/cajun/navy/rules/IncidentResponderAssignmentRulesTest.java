@@ -37,16 +37,17 @@ public class IncidentResponderAssignmentRulesTest {
     public void myExampleTest() {
 
         List<Incident> incidents = new ArrayList<>();
-        for (int i = 0; i < Incidents.latitudes.length; i++) {
+        for (int i = 0; i < 1; i++) {
+        //for (int i = 0; i < Incidents.latitudes.length; i++) {
         	Incident incident = new Incident();
-        	incident.setId( i + 1 );
+        	incident.setId( Integer.toString(i + 1) );
         	incident.setNumPeople( ThreadLocalRandom.current().nextInt(1, 6 ));
         	Integer medicalNeeded = ThreadLocalRandom.current().nextInt(1, 3);
         	incident.setMedicalNeeded( (medicalNeeded == 1) ? true : false );
-        	incident.setReportedTime( ZonedDateTime.now( ZoneId.systemDefault() ) ); //TODO - @michael - need to find the code for my utility class for handling datetime
+        	incident.setReportedTime( System.currentTimeMillis() );
         	incident.setLatitude( latitude( Incidents.latitudes[i] ) );
         	incident.setLongitude( longitude( Incidents.longitudes[i] ) );
-        	incident.setReporterId( i + 1 );
+        	incident.setReporterId( Integer.toString(i + 1) );
         	incidents.add( incident );
         	
         	//LOG.info(incident.toString());
@@ -55,7 +56,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Responder> responders = new ArrayList<>();
         for (int i = 0; i < Responders.latitudes.length; i++) {
         	Responder responder = new Responder();
-            responder.setId( i + 1 );
+            responder.setId( Integer.toString(i + 1) );
             responder.setFullname( Responders.names[i] );
             responder.setBoatCapacity( ThreadLocalRandom.current().nextInt(1, 8) );
         	Integer hasMedical = ThreadLocalRandom.current().nextInt(1, 3);
@@ -89,14 +90,14 @@ public class IncidentResponderAssignmentRulesTest {
          //for (int i = 0; i < Incidents.latitudes.length; i++) {
          for (int i = 0; i < 10; i++) {
          	Incident incident = new Incident();
-         	incident.setId( i + 1 );
+         	incident.setId( Integer.toString(i + 1) );
          	incident.setNumPeople( ThreadLocalRandom.current().nextInt(1, 6 ));
          	Integer medicalNeeded = ThreadLocalRandom.current().nextInt(1, 3);
          	incident.setMedicalNeeded( (medicalNeeded == 1) ? true : false );
-         	incident.setReportedTime( ZonedDateTime.now( ZoneId.systemDefault() ) ); //TODO - @michael - need to find the code for my utility class for handling datetime
+         	incident.setReportedTime( System.currentTimeMillis() );
          	incident.setLatitude( latitude( Incidents.latitudes[i] ) );
          	incident.setLongitude( longitude( Incidents.longitudes[i] ) );
-         	incident.setReporterId( i + 1 );
+         	incident.setReporterId( Integer.toString(i + 1) );
          	incidents.add( incident );
          	
          	//LOG.info(incident.toString());
@@ -106,7 +107,7 @@ public class IncidentResponderAssignmentRulesTest {
          for (int i = 0; i < 3; i++) {
          //for (int i = 0; i < Responders.latitudes.length; i++) {
          	Responder responder = new Responder();
-             responder.setId( i + 1 );
+             responder.setId( Integer.toString(i + 1) );
              responder.setFullname( Responders.names[i] );
              responder.setBoatCapacity( ThreadLocalRandom.current().nextInt(1, 8) );
          	Integer hasMedical = ThreadLocalRandom.current().nextInt(1, 3);
