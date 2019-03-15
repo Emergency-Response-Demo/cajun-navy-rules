@@ -11,8 +11,18 @@ import com.redhat.cajun.navy.rules.model.MissionAssignment;
 import com.redhat.cajun.navy.rules.model.PotentialMissionAssignments;
 import com.redhat.cajun.navy.rules.model.Responder;
 import com.redhat.cajun.navy.rules.model.Status;
+import java.util.Arrays;
+import java.util.Collections;
+import java.math.BigDecimal;
 
 //TODO - @michael - using no loop on every rule is indicative of poorly though out rule design we should look into this
+
+declare Destination
+    name : String 
+    distance : double
+    destinationLat: BigDecimal
+    destinationLong: BigDecimal
+end
 
 rule "Create the Mission Assignments"
     salience 100
@@ -32,6 +42,44 @@ rule "Create the Mission Assignments"
         	                                                    $responder.getLongitude());
         	insert( new MissionAssignment( $incident, $responder, distance ) );
         }
+end
+
+rule "Responder Drop Off Locations"
+    when
+        $ma : Mission( destinationLat == null, destinationLong == null )
+    then
+        	//Port City Marina
+			//34.2461° N, 77.9519° W
+        	double portCityDistance = DistanceHelper.calculateDistance( new BigDecimal(34.2461),
+        	                                                    $ma.getIncidentLat(),
+        	                                                     new BigDecimal(77.9519),
+        	                                                    $ma.getIncidentLong());
+        	insert (new Destination("portCity", portCityDistance, new BigDecimal(34.2461), new BigDecimal(77.9519)));
+        	//Wilmington Marine Center
+			//34.1706° N, 77.9490° W 
+        	double wilmingtonDistance = DistanceHelper.calculateDistance( new BigDecimal(34.1706),
+        	                                                    $ma.getIncidentLat(),
+        	                                                     new BigDecimal(77.9490),
+        	                                                    $ma.getIncidentLong());                                                  
+        	insert (new Destination("wilmington", wilmingtonDistance, new BigDecimal(34.1706), new BigDecimal(77.9490)));
+        	//Carolina Beach Yacht Club & Marina / Joyner Marina
+			//34.0583° N, 77.8885° W
+        	double carolinaDistance = DistanceHelper.calculateDistance( new BigDecimal(34.0583),
+        	                                                    $ma.getIncidentLat(),
+        	                                                     new BigDecimal(77.8885),
+        	                                                    $ma.getIncidentLong());                                                  
+        	insert (new Destination("carolina", carolinaDistance, new BigDecimal(34.0583), new BigDecimal(77.8885)));
+end
+
+rule "Set Responder Destination"
+when
+	$ma : Mission(destinationLat == null, destinationLong == null)
+	$destination : Destination($distance : distance)
+	not Destination($distance > distance, this != $destination)
+then
+	$ma.setDestinationLat($destination.getDestinationLat());
+	$ma.setDestinationLong($destination.getDestinationLong());
+	modify($ma){}
 end
 
 rule "The Responder can provide medical assitance"
@@ -55,7 +103,6 @@ rule "The Responder can fit the number of people on their boat"
     	System.out.println( "The Responder can fit the number of people on their boat " + $boatCapacity + " " + $numberOfPeople );
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 100 );
-      
 end
 
 rule "The Responder can fit the EXACT number of people on their boat"
@@ -129,6 +176,10 @@ rule "Assign the top mission"
 		$assignments : PotentialMissionAssignments( prioritized == true )
 	then
 		insert( $assignments.getAssignedMission() );
+		System.out.println("mission status= " + $assignments.getAssignedMission().getStatus());
+		//modify($assignments){
+		//	getAssignedMission()
+		//}
 end
 
 rule "debug"
