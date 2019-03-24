@@ -12,8 +12,6 @@ import com.redhat.cajun.navy.rules.model.PotentialMissionAssignments;
 import com.redhat.cajun.navy.rules.model.Responder;
 import com.redhat.cajun.navy.rules.model.Status;
 
-//TODO - @michael - using no loop on every rule is indicative of poorly though out rule design we should look into this
-
 rule "Create the Mission Assignments"
     salience 100
     when
@@ -34,13 +32,12 @@ rule "Create the Mission Assignments"
         }
 end
 
-rule "The Responder can provide medical assitance"
+rule "The Responder can provide medical assistance"
     when
         $incident : Incident( medicalNeeded == true )
         $responder : Responder( hasMedical == true )
         $mission : MissionAssignment( incident == $incident, responder == $responder )
     then
-    	System.out.println( "The Responder can provide medical assitance" );
         int currentScore = $mission.getCompatibilityScore();
         $mission.setCompatibilityScore( currentScore + 50 );
         
@@ -52,7 +49,7 @@ rule "The Responder can fit the number of people on their boat"
         $responder : Responder( boatCapacity >= $numberOfPeople, $boatCapacity : boatCapacity )
         $mission : MissionAssignment( incident == $incident, responder == $responder )
     then
-    	System.out.println( "The Responder can fit the number of people on their boat " + $boatCapacity + " " + $numberOfPeople );
+
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 100 );
       
@@ -64,7 +61,6 @@ rule "The Responder can fit the EXACT number of people on their boat"
         $responder : Responder( boatCapacity == $numberOfPeople )
         $mission : MissionAssignment( incident == $incident, responder == $responder )
     then
-    	System.out.println( "The Responder can fit the EXACT number of people on their boat " + $incident );
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 50 );
 
@@ -94,7 +90,7 @@ rule "Responder is 10km to 15km away from Incident"
 		$missionAssignment.setCompatibilityScore( currentScore + 50 );
 end
 
-rule "Responder is more than 15 away from Incident"
+rule "Responder is more than 15km away from Incident"
 	when
 		$missionAssignment : MissionAssignment ( distance > 15000 )
 	then
@@ -117,7 +113,6 @@ rule "Default Prioritization when no Command Override"
 		not CommanderOverride()
 		$assignments : PotentialMissionAssignments( prioritized == false )
 	then
-		System.err.println( "Default prioritization algorithm, rules with a CommanderOverride would change this behavior" );
 		modify( $assignments ){
 			defaultPrioritization()
 		}
@@ -129,15 +124,4 @@ rule "Assign the top mission"
 		$assignments : PotentialMissionAssignments( prioritized == true )
 	then
 		insert( $assignments.getAssignedMission() );
-end
-
-rule "debug"
-	salience -1000
-	enabled false
-	when
-		$ma : MissionAssignment()
-	then
-		System.out.println("Mission Assignment: Incident.id = " + $ma.getIncident().getId() + ", Responder.id = " + 
-		                   $ma.getResponder().getId() + ", distance = " + $ma.getDistance() + ", score = " + $ma.getCompatibilityScore());
-		//System.out.println($ma.toString());
 end
