@@ -16,7 +16,7 @@ rule "Create the Mission Assignments"
     salience 100
     when
         $incident : Incident()
-        $responder : Responder()
+        $responder : Responder( boatCapacity >= $incident.numPeople )
         not MissionAssignment( responder == $responder, incident == $incident )
     then
     	if ( $incident.getLatitude() == null || $incident.getLongitude() == null || 
