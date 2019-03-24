@@ -39,7 +39,7 @@ rule "The Responder can provide medical assistance"
         $mission : MissionAssignment( incident == $incident, responder == $responder )
     then
         int currentScore = $mission.getCompatibilityScore();
-        $mission.setCompatibilityScore( currentScore + 50 );
+        $mission.setCompatibilityScore( currentScore + 100 );
         
 end
 
