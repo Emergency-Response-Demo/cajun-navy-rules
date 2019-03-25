@@ -11,6 +11,7 @@ import com.redhat.cajun.navy.rules.model.MissionAssignment;
 import com.redhat.cajun.navy.rules.model.PotentialMissionAssignments;
 import com.redhat.cajun.navy.rules.model.Responder;
 import com.redhat.cajun.navy.rules.model.Destination;
+import com.redhat.cajun.navy.rules.model.Status;
 import java.math.BigDecimal;
 
 rule "Create the Mission Assignments"
@@ -35,7 +36,7 @@ end
 
 rule "Responder Drop Off Locations"
     when
-        $mission : Mission( destinationLat == null, destinationLong == null )
+        $mission : Mission( destinationLat == null, destinationLong == null, status == Status.ASSIGNED )
         $destination : Destination( distance == null )
     then
        	double distance = DistanceHelper.calculateDistance( $destination.getLatitude(),
@@ -47,13 +48,13 @@ end
 
 rule "Set Responder Destination"
     when
-	    $ma : Mission(destinationLat == null, destinationLong == null)
+	    $mission : Mission( destinationLat == null, destinationLong == null, status == Status.ASSIGNED )
 	    $destination : Destination($distance : distance)
 	    not Destination($distance > distance, this != $destination)
     then
-	    $ma.setDestinationLat($destination.getLatitude());
-	    $ma.setDestinationLong($destination.getLongitude());
-	    modify($ma){}
+	    $mission.setDestinationLat($destination.getLatitude());
+	    $mission.setDestinationLong($destination.getLongitude());
+	    modify($mission){}
 end
 
 rule "The Responder can provide medical assistance"
@@ -142,8 +143,9 @@ end
 
 rule "Assign the top mission"
 	when
-		not Mission()
+		$mission: Mission(status == Status.REQUESTED)
 		$assignments : PotentialMissionAssignments( prioritized == true )
 	then
-		insert( $assignments.getAssignedMission() );
+		$assignments.getAssignedMission($mission);
+		update ($mission)
 end

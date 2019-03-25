@@ -16,6 +16,7 @@ import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
 import com.redhat.cajun.navy.rules.model.MissionAssignment;
 import com.redhat.cajun.navy.rules.model.Responder;
+import com.redhat.cajun.navy.rules.model.Status;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kie.api.KieServices;
@@ -76,6 +77,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -102,6 +104,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getId(), mission.getResponderId());
         assertEquals(responder.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -145,6 +148,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -172,6 +176,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getId(), mission.getResponderId());
         assertEquals(responder.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -215,6 +220,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -240,6 +246,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(mission.getResponderId(), responder.getId());
         assertEquals(mission.getResponderStartLat(), responder.getLatitude());
         assertEquals(mission.getResponderStartLong(), responder.getLongitude());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -283,6 +290,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -309,6 +317,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getId(), mission.getResponderId());
         assertEquals(responder.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -352,6 +361,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -378,6 +388,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getId(), mission.getResponderId());
         assertEquals(responder.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -422,6 +433,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -448,6 +460,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getId(), mission.getResponderId());
         assertEquals(responder.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -486,6 +499,7 @@ public class IncidentResponderAssignmentRulesTest {
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -499,7 +513,9 @@ public class IncidentResponderAssignmentRulesTest {
 
         assertNotNull(results.getValue("mission"));
         assertTrue(results.getValue("mission") instanceof List);
-        assertEquals(0, ((List)results.getValue("mission")).size());
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(Status.UNASSIGNED, mission.getStatus());
     }
 
     /**
@@ -549,6 +565,7 @@ public class IncidentResponderAssignmentRulesTest {
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder1));
         commands.add(CommandFactory.newInsert(responder2));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
 
@@ -565,6 +582,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder1.getId(), mission.getResponderId());
         assertEquals(responder1.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder1.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -615,6 +633,7 @@ public class IncidentResponderAssignmentRulesTest {
         commands.add(CommandFactory.newInsert(incident));
         commands.add(CommandFactory.newInsert(responder1));
         commands.add(CommandFactory.newInsert(responder2));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
 
@@ -631,6 +650,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder1.getId(), mission.getResponderId());
         assertEquals(responder1.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder1.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     /**
@@ -689,6 +709,7 @@ public class IncidentResponderAssignmentRulesTest {
         commands.add(CommandFactory.newInsert(responder));
         commands.add(CommandFactory.newInsert(destination1));
         commands.add(CommandFactory.newInsert(destination2));
+        commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -708,6 +729,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder.getLongitude(), mission.getResponderStartLong());
         assertEquals(destination1.getLatitude(), mission.getDestinationLat());
         assertEquals(destination1.getLongitude(), mission.getDestinationLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
     @Test
