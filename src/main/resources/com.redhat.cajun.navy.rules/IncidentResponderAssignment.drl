@@ -35,29 +35,14 @@ end
 
 rule "Responder Drop Off Locations"
     when
-        $ma : Mission( destinationLat == null, destinationLong == null )
+        $mission : Mission( destinationLat == null, destinationLong == null )
+        $destination : Destination( distance == null )
     then
-       	//Port City Marina
-		//34.2461° N, 77.9519° W
-       	double portCityDistance = DistanceHelper.calculateDistance( new BigDecimal(34.2461),
-         	                                                    $ma.getIncidentLat(),
-        	                                                     new BigDecimal(77.9519),
-        	                                                    $ma.getIncidentLong());
-       	insert (new Destination("portCity", portCityDistance, new BigDecimal(34.2461), new BigDecimal(77.9519)));
-       	//Wilmington Marine Center
-		//34.1706° N, 77.9490° W
-       	double wilmingtonDistance = DistanceHelper.calculateDistance( new BigDecimal(34.1706),
-        	                                                    $ma.getIncidentLat(),
-        	                                                     new BigDecimal(77.9490),
-        	                                                    $ma.getIncidentLong());                                                  
-       	insert (new Destination("wilmington", wilmingtonDistance, new BigDecimal(34.1706), new BigDecimal(77.9490)));
-       	//Carolina Beach Yacht Club & Marina / Joyner Marina
-		//34.0583° N, 77.8885° W
-       	double carolinaDistance = DistanceHelper.calculateDistance( new BigDecimal(34.0583),
-        	                                                    $ma.getIncidentLat(),
-        	                                                     new BigDecimal(77.8885),
-        	                                                    $ma.getIncidentLong());                                                  
-       	insert (new Destination("carolina", carolinaDistance, new BigDecimal(34.0583), new BigDecimal(77.8885)));
+       	double distance = DistanceHelper.calculateDistance( $destination.getLatitude(),
+            $mission.getIncidentLat(), $destination.getLongitude(), $mission.getIncidentLong());
+        modify($destination){
+            setDistance(distance)
+        }
 end
 
 rule "Set Responder Destination"
@@ -88,7 +73,6 @@ rule "The Responder can fit the number of people on their boat"
         $responder : Responder( boatCapacity >= $numberOfPeople, $boatCapacity : boatCapacity )
         $mission : MissionAssignment( incident == $incident, responder == $responder )
     then
-
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 100 );
 end

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.redhat.cajun.navy.rules.model.Destination;
 import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
 import com.redhat.cajun.navy.rules.model.MissionAssignment;
@@ -630,6 +631,83 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(responder1.getId(), mission.getResponderId());
         assertEquals(responder1.getLatitude(), mission.getResponderStartLat());
         assertEquals(responder1.getLongitude(), mission.getResponderStartLong());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      There are two destinations
+     *      There is no need for medical assistance
+     *      The responder can fit the number of people in their boat
+     *      The distance between the responder and the incident is less than 5 km
+     *      The distance between the first destination and the incident is less than 5 km
+     *      The distance between the second destination and the incident is more than 5 km
+     *
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     *      A mission is assigned to the responder
+     *      The destination of the mission is set to the first destination
+     *
+     */
+    @Test
+    void testAssignMissionWithDestination() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(3);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Destination destination1 = new Destination();
+        destination1.setName("Destination1");
+        destination1.setLatitude(new BigDecimal("33.97000"));
+        destination1.setLongitude(new BigDecimal("-76.96000"));
+
+        Destination destination2 = new Destination();
+        destination2.setName("Destination2");
+        destination2.setLatitude(new BigDecimal("34.03000"));
+        destination2.setLongitude(new BigDecimal("-77.06000"));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(destination1));
+        commands.add(CommandFactory.newInsert(destination2));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder.getId(), mission.getResponderId());
+        assertEquals(responder.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(destination1.getLatitude(), mission.getDestinationLat());
+        assertEquals(destination1.getLongitude(), mission.getDestinationLong());
     }
 
     @Test
