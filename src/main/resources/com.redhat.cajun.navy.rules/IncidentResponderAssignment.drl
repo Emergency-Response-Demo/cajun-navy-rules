@@ -9,10 +9,34 @@ import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
 import com.redhat.cajun.navy.rules.model.MissionAssignment;
 import com.redhat.cajun.navy.rules.model.PotentialMissionAssignments;
+import com.redhat.cajun.navy.rules.model.Responders;
 import com.redhat.cajun.navy.rules.model.Responder;
+import com.redhat.cajun.navy.rules.model.Destinations;
 import com.redhat.cajun.navy.rules.model.Destination;
 import com.redhat.cajun.navy.rules.model.Status;
 import java.math.BigDecimal;
+
+rule "Add responders"
+	salience 200
+	when
+		$responders : Responders()
+	then
+		for (Responder r : $responders.getResponders()) {
+			insert(r);
+		}
+		retract( $responders);
+end
+
+rule "Add destinations"
+    salience 200
+    when
+        $destinations : Destinations()
+    then
+        for (Destination d: $destinations.getDestinations()) {
+            insert(d);
+        }
+        retract( $destinations );
+end
 
 rule "Create the Mission Assignments"
     salience 100

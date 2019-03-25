@@ -1,4 +1,4 @@
-package com.redhat.cajun.navy.rules;
+package com.redhat.cajun.navy.rules.test.data;
 
 public class Responders {
 	public static final double[] latitudes = { 34.15684, 34.23519, 34.11331, 34.19219, 34.25192, 34.19492, 34.28068,

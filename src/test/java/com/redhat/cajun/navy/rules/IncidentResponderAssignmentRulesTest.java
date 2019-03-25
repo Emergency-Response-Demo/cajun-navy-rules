@@ -1,7 +1,5 @@
 package com.redhat.cajun.navy.rules;
 
-import static com.redhat.cajun.navy.rules.test.util.DistanceHelper.latitude;
-import static com.redhat.cajun.navy.rules.test.util.DistanceHelper.longitude;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,11 +10,15 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.redhat.cajun.navy.rules.model.Destination;
+import com.redhat.cajun.navy.rules.model.Destinations;
 import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
 import com.redhat.cajun.navy.rules.model.MissionAssignment;
 import com.redhat.cajun.navy.rules.model.Responder;
+import com.redhat.cajun.navy.rules.model.Responders;
 import com.redhat.cajun.navy.rules.model.Status;
+import com.redhat.cajun.navy.rules.test.data.Incidents;
+import com.redhat.cajun.navy.rules.test.util.DistanceHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kie.api.KieServices;
@@ -72,11 +74,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -143,11 +148,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.06000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -215,11 +223,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.12000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -285,11 +296,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.15000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -356,11 +370,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -428,11 +445,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -494,11 +514,14 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -559,12 +582,15 @@ public class IncidentResponderAssignmentRulesTest {
         responder2.setLatitude(new BigDecimal("34.06000"));
         responder2.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder1);
+        responders.add(responder2);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder1));
-        commands.add(CommandFactory.newInsert(responder2));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -627,12 +653,15 @@ public class IncidentResponderAssignmentRulesTest {
         responder2.setLatitude(new BigDecimal("34.03000"));
         responder2.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder1);
+        responders.add(responder2);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder1));
-        commands.add(CommandFactory.newInsert(responder2));
+        commands.add(CommandFactory.newInsert(responders));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
@@ -692,6 +721,9 @@ public class IncidentResponderAssignmentRulesTest {
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
 
+        Responders responders = new Responders();
+        responders.add(responder);
+
         Destination destination1 = new Destination();
         destination1.setName("Destination1");
         destination1.setLatitude(new BigDecimal("33.97000"));
@@ -702,13 +734,16 @@ public class IncidentResponderAssignmentRulesTest {
         destination2.setLatitude(new BigDecimal("34.03000"));
         destination2.setLongitude(new BigDecimal("-77.06000"));
 
+        Destinations destinations = new Destinations();
+        destinations.add(destination1);
+        destinations.add(destination2);
+
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
 
         List<Command<?>> commands = new ArrayList<>();
         commands.add(CommandFactory.newInsert(incident));
-        commands.add(CommandFactory.newInsert(responder));
-        commands.add(CommandFactory.newInsert(destination1));
-        commands.add(CommandFactory.newInsert(destination2));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(destinations));
         commands.add(CommandFactory.newInsert(new Mission()));
         commands.add(CommandFactory.newFireAllRules());
         commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
@@ -744,22 +779,22 @@ public class IncidentResponderAssignmentRulesTest {
         	int medicalNeeded = ThreadLocalRandom.current().nextInt(1, 3);
         	incident.setMedicalNeeded(medicalNeeded == 1);
         	incident.setReportedTime( System.currentTimeMillis() );
-        	incident.setLatitude( latitude( Incidents.latitudes[i] ) );
-        	incident.setLongitude( longitude( Incidents.longitudes[i] ) );
+        	incident.setLatitude( DistanceHelper.latitude( Incidents.latitudes[i] ) );
+        	incident.setLongitude( DistanceHelper.longitude( Incidents.longitudes[i] ) );
         	incident.setReporterId( Integer.toString(i + 1) );
         	incidents.add( incident );
         }
-        
+
         List<Responder> responders = new ArrayList<>();
-        for (int i = 0; i < Responders.latitudes.length; i++) {
+        for (int i = 0; i < com.redhat.cajun.navy.rules.test.data.Responders.latitudes.length; i++) {
         	Responder responder = new Responder();
             responder.setId( Integer.toString(i + 1) );
-            responder.setFullname( Responders.names[i] );
+            responder.setFullname( com.redhat.cajun.navy.rules.test.data.Responders.names[i] );
             responder.setBoatCapacity( ThreadLocalRandom.current().nextInt(1, 8) );
         	int hasMedical = ThreadLocalRandom.current().nextInt(1, 3);
             responder.setHasMedical(hasMedical == 1);
-            responder.setLatitude( latitude( Responders.latitudes[i] ) );
-            responder.setLongitude( longitude( Responders.longitudes[i] ) );
+            responder.setLatitude( DistanceHelper.latitude( com.redhat.cajun.navy.rules.test.data.Responders.latitudes[i] ) );
+            responder.setLongitude( DistanceHelper.longitude( com.redhat.cajun.navy.rules.test.data.Responders.longitudes[i] ) );
             responder.setPhoneNumber( "555-555-5555" );
             responders.add( responder );
         }
@@ -777,7 +812,7 @@ public class IncidentResponderAssignmentRulesTest {
         System.err.println( results.getValue( "mission" ) );
 
     }
-    
+
     @Test
     void testGeoRules() {
     	 List<Incident> incidents = new ArrayList<>();
@@ -788,8 +823,8 @@ public class IncidentResponderAssignmentRulesTest {
          	int medicalNeeded = ThreadLocalRandom.current().nextInt(1, 3);
          	incident.setMedicalNeeded(medicalNeeded == 1);
          	incident.setReportedTime( System.currentTimeMillis() );
-         	incident.setLatitude( latitude( Incidents.latitudes[i] ) );
-         	incident.setLongitude( longitude( Incidents.longitudes[i] ) );
+         	incident.setLatitude( DistanceHelper.latitude( Incidents.latitudes[i] ) );
+         	incident.setLongitude( DistanceHelper.longitude( Incidents.longitudes[i] ) );
          	incident.setReporterId( Integer.toString(i + 1) );
          	incidents.add( incident );
          }
@@ -798,12 +833,12 @@ public class IncidentResponderAssignmentRulesTest {
         for (int i = 0; i < 3; i++) {
             Responder responder = new Responder();
             responder.setId( Integer.toString(i + 1) );
-            responder.setFullname( Responders.names[i] );
+            responder.setFullname( com.redhat.cajun.navy.rules.test.data.Responders.names[i] );
             responder.setBoatCapacity( ThreadLocalRandom.current().nextInt(1, 8) );
             int hasMedical = ThreadLocalRandom.current().nextInt(1, 3);
             responder.setHasMedical(hasMedical == 1);
-            responder.setLatitude( latitude( Responders.latitudes[i] ) );
-            responder.setLongitude( longitude( Responders.longitudes[i] ) );
+            responder.setLatitude( DistanceHelper.latitude( com.redhat.cajun.navy.rules.test.data.Responders.latitudes[i] ) );
+            responder.setLongitude( DistanceHelper.longitude( com.redhat.cajun.navy.rules.test.data.Responders.longitudes[i] ) );
             responder.setPhoneNumber( "555-555-5555" );
             responders.add( responder );
         }
