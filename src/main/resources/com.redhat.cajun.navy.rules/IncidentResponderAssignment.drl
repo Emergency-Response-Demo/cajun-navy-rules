@@ -14,6 +14,7 @@ import com.redhat.cajun.navy.rules.model.Responder;
 import com.redhat.cajun.navy.rules.model.Destinations;
 import com.redhat.cajun.navy.rules.model.Destination;
 import com.redhat.cajun.navy.rules.model.Status;
+import com.redhat.cajun.navy.rules.model.IncidentPriority;
 import java.math.BigDecimal;
 
 rule "Add responders"
@@ -38,14 +39,36 @@ rule "Add destinations"
         retract( $destinations );
 end
 
-rule "Create the Mission Assignments"
+rule "Create the Mission Assignments when there is a IncidentPriority for the Incident"
     salience 100
     when
         $incident : Incident()
         $responder : Responder( boatCapacity >= $incident.numPeople )
+        IncidentPriority ( incidentId == $incident.id, priority.compareTo(averagePriority) >= 0 )
         not MissionAssignment( responder == $responder, incident == $incident )
     then
     	if ( $incident.getLatitude() == null || $incident.getLongitude() == null || 
+    	     $responder.getLatitude() == null || $responder.getLongitude() == null ) {
+        	insert( new MissionAssignment( $incident, $responder ) );
+        }
+        else {
+        	double distance = DistanceHelper.calculateDistance( $incident.getLatitude(),
+        	                                                    $responder.getLatitude(),
+        	                                                    $incident.getLongitude(),
+        	                                                    $responder.getLongitude());
+        	insert( new MissionAssignment( $incident, $responder, distance ) );
+        }
+end
+
+rule "Create the Mission Assignments when there is no IncidentPriority for the Incident"
+    salience 100
+    when
+        $incident : Incident()
+        $responder : Responder( boatCapacity >= $incident.numPeople )
+        not IncidentPriority ( incidentId == $incident.id )
+        not MissionAssignment( responder == $responder, incident == $incident )
+    then
+    	if ( $incident.getLatitude() == null || $incident.getLongitude() == null ||
     	     $responder.getLatitude() == null || $responder.getLongitude() == null ) {
         	insert( new MissionAssignment( $incident, $responder ) );
         }
