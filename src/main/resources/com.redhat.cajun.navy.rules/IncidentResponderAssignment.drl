@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.redhat.cajun.navy.rules.DistanceHelper;
 
-import com.redhat.cajun.navy.rules.model.CommanderOverride;
 import com.redhat.cajun.navy.rules.model.Incident;
 import com.redhat.cajun.navy.rules.model.Mission;
 import com.redhat.cajun.navy.rules.model.MissionAssignment;
@@ -180,7 +179,6 @@ end
 rule "Default Prioritization when no Command Override"
 	salience -100
 	when
-		not CommanderOverride()
 		$assignments : PotentialMissionAssignments( prioritized == false )
 	then
 		modify( $assignments ){
