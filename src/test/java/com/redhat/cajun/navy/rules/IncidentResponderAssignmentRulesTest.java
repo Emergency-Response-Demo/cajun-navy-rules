@@ -816,7 +816,7 @@ public class IncidentResponderAssignmentRulesTest {
      *      There is a responder
      *      There is an incident
      *      The priority of the incident is lower than the average priority
-     *      The priority of the incident is greater than zero
+     *      The priority of the incident is greater than zero but lower or equal than 5
      *      There are more incidents waiting to be assigned than available responders / 1.5
      *
      *    Then:
@@ -855,8 +855,8 @@ public class IncidentResponderAssignmentRulesTest {
 
         IncidentPriority incidentPriority = new IncidentPriority();
         incidentPriority.setIncidentId("incident1");
-        incidentPriority.setPriority(new BigDecimal(1));
-        incidentPriority.setAveragePriority(new BigDecimal(1.1));
+        incidentPriority.setPriority(new BigDecimal(5));
+        incidentPriority.setAveragePriority(new BigDecimal(5.1));
         incidentPriority.setIncidents(new BigDecimal(2));
 
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
@@ -891,7 +891,7 @@ public class IncidentResponderAssignmentRulesTest {
      *      There is a responder
      *      There is an incident
      *      The priority of the incident is lower than the average priority
-     *      The priority of the incident is greater than zero
+     *      The priority of the incident is greater than zero and lower or equal to 5
      *      There are less incidents waiting to be assigned than available responders / 1.5
      *
      *    Then:
@@ -929,8 +929,207 @@ public class IncidentResponderAssignmentRulesTest {
 
         IncidentPriority incidentPriority = new IncidentPriority();
         incidentPriority.setIncidentId("incident1");
-        incidentPriority.setPriority(new BigDecimal(1));
-        incidentPriority.setAveragePriority(new BigDecimal(1.1));
+        incidentPriority.setPriority(new BigDecimal(5));
+        incidentPriority.setAveragePriority(new BigDecimal(5.1));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      The priority of the incident is lower than the average priority
+     *      The priority of the incident is greater than 5 but lower than or equal to 10
+     *      The priority of the incident is lower than the average priority divided by 2
+     *
+     *    Then:
+     *      No MissionAssignment is created
+     *      No mission is assigned to the responder
+     */
+    @Test
+    void testAssignMissionWhenPriorityIsBetweenFiveAndTenButStillTooLow() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(3);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(4);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(10));
+        incidentPriority.setAveragePriority(new BigDecimal(21));
+        incidentPriority.setIncidents(new BigDecimal(2));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(0, ((List)results.getValue("missionassignment")).size());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(Status.UNASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      The priority of the incident is lower than the average priority
+     *      The priority of the incident is greater than 5 but lower than or equal to 10
+     *      The priority of the incident is higher than the average priority divided by 2
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     */
+    @Test
+    void testAssignMissionWhenPriorityIsBetweenFiveAndTen() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(3);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(4);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(10));
+        incidentPriority.setAveragePriority(new BigDecimal(19));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      The priority of the incident is lower than the average priority
+     *      The priority of the incident is greater 10
+     *      The priority of the incident is higher than the average priority divided by 2
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     */
+    @Test
+    void testAssignMissionWhenPriorityIsHigherThanTen() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(3);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(4);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(11));
+        incidentPriority.setAveragePriority(new BigDecimal(12));
         incidentPriority.setIncidents(new BigDecimal(1));
 
         StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
