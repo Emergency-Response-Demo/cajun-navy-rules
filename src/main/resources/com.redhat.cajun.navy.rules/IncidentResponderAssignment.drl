@@ -16,6 +16,10 @@ import com.redhat.cajun.navy.rules.model.Status;
 import com.redhat.cajun.navy.rules.model.IncidentPriority;
 import java.math.BigDecimal;
 
+declare AssignmentPredicate
+    incident: String
+end
+
 rule "Add responders"
 	salience 200
 	when
@@ -24,7 +28,6 @@ rule "Add responders"
 		for (Responder r : $responders.getResponders()) {
 			insert(r);
 		}
-		retract( $responders);
 end
 
 rule "Add destinations"
@@ -38,36 +41,67 @@ rule "Add destinations"
         retract( $destinations );
 end
 
-rule "Create the Mission Assignments when there is a IncidentPriority for the Incident"
-    salience 100
+rule "Create a AssignmentPredicate when there is no IncidentPriority for the Incident"
+    when
+        $incident : Incident()
+        not IncidentPriority ( incidentId == $incident.id )
+    then
+        AssignmentPredicate predicate = new AssignmentPredicate();
+        predicate.setIncident($incident.getId());
+        insert( predicate );
+end
+
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with higher than average priority"
+    when
+        $incident : Incident()
+        IncidentPriority ( incidentId == $incident.id, priority.compareTo(averagePriority) >= 0 )
+    then
+        AssignmentPredicate predicate = new AssignmentPredicate();
+        predicate.setIncident($incident.getId());
+        insert( predicate );
+end
+
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority and sufficient responders"
+    when
+        $incident : Incident()
+        $responders: Responders()
+        IncidentPriority ( incidentId == $incident.id, priority > 0, priority.compareTo(averagePriority) < 0, incidents.compareTo(new BigDecimal(($responders.getResponders().size)/1.5)) < 0 )
+    then
+        AssignmentPredicate predicate = new AssignmentPredicate();
+        predicate.setIncident($incident.getId());
+        insert( predicate );
+end
+
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but high priority"
+    when
+        $incident : Incident()
+        $responders: Responders()
+        IncidentPriority ( incidentId == $incident.id, priority > 5 && <= 10, priority.compareTo(averagePriority / 2) > 0)
+    then
+        AssignmentPredicate predicate = new AssignmentPredicate();
+        predicate.setIncident($incident.getId());
+        insert( predicate );
+end
+
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but very high priority"
+    when
+        $incident : Incident()
+        $responders: Responders()
+        IncidentPriority ( incidentId == $incident.id, priority > 10, priority.compareTo(averagePriority) < 0)
+    then
+        AssignmentPredicate predicate = new AssignmentPredicate();
+        predicate.setIncident($incident.getId());
+        insert( predicate );
+end
+
+rule "Create the Mission Assignments when there is a Assignment Predicate for the incident"
     when
         $incident : Incident()
         $responder : Responder( boatCapacity >= $incident.numPeople )
-        IncidentPriority ( incidentId == $incident.id, priority.compareTo(averagePriority) >= 0 )
+        exists AssignmentPredicate( incident == $incident.id)
         not MissionAssignment( responder == $responder, incident == $incident )
     then
     	if ( $incident.getLatitude() == null || $incident.getLongitude() == null || 
-    	     $responder.getLatitude() == null || $responder.getLongitude() == null ) {
-        	insert( new MissionAssignment( $incident, $responder ) );
-        }
-        else {
-        	double distance = DistanceHelper.calculateDistance( $incident.getLatitude(),
-        	                                                    $responder.getLatitude(),
-        	                                                    $incident.getLongitude(),
-        	                                                    $responder.getLongitude());
-        	insert( new MissionAssignment( $incident, $responder, distance ) );
-        }
-end
-
-rule "Create the Mission Assignments when there is no IncidentPriority for the Incident"
-    salience 100
-    when
-        $incident : Incident()
-        $responder : Responder( boatCapacity >= $incident.numPeople )
-        not IncidentPriority ( incidentId == $incident.id )
-        not MissionAssignment( responder == $responder, incident == $incident )
-    then
-    	if ( $incident.getLatitude() == null || $incident.getLongitude() == null ||
     	     $responder.getLatitude() == null || $responder.getLongitude() == null ) {
         	insert( new MissionAssignment( $incident, $responder ) );
         }
@@ -124,6 +158,26 @@ rule "The Responder can fit the number of people on their boat"
 		$mission.setCompatibilityScore( currentScore + 100 );
 end
 
+rule "The difference between the boat capacity and the incident number of people is less than or equal to 4"
+    when
+        $incident : Incident( $numberOfPeople : numPeople )
+        $responder : Responder( boatCapacity >= $numberOfPeople && boatCapacity <= $numberOfPeople + 4 )
+        $mission : MissionAssignment( incident == $incident, responder == $responder )
+    then
+        int currentScore = $mission.getCompatibilityScore();
+		$mission.setCompatibilityScore( currentScore + 25 );
+end
+
+rule "The difference between the boat capacity and the incident number of people is less than or equal to 2"
+    when
+        $incident : Incident( $numberOfPeople : numPeople )
+        $responder : Responder( boatCapacity >= $numberOfPeople && boatCapacity <= $numberOfPeople + 2 )
+        $mission : MissionAssignment( incident == $incident, responder == $responder )
+    then
+        int currentScore = $mission.getCompatibilityScore();
+		$mission.setCompatibilityScore( currentScore + 25 );
+end
+
 rule "The Responder can fit the EXACT number of people on their boat"
     when
         $incident : Incident( $numberOfPeople : numPeople )
@@ -132,7 +186,6 @@ rule "The Responder can fit the EXACT number of people on their boat"
     then
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 50 );
-
 end
 
 rule "Responder is 0 to 5km away from Incident"
