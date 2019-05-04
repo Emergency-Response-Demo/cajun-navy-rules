@@ -158,6 +158,26 @@ rule "The Responder can fit the number of people on their boat"
 		$mission.setCompatibilityScore( currentScore + 100 );
 end
 
+rule "The difference between the boat capacity and the incident number of people is less than or equal to 4"
+    when
+        $incident : Incident( $numberOfPeople : numPeople )
+        $responder : Responder( boatCapacity >= $numberOfPeople && boatCapacity <= $numberOfPeople + 4 )
+        $mission : MissionAssignment( incident == $incident, responder == $responder )
+    then
+        int currentScore = $mission.getCompatibilityScore();
+		$mission.setCompatibilityScore( currentScore + 25 );
+end
+
+rule "The difference between the boat capacity and the incident number of people is less than or equal to 2"
+    when
+        $incident : Incident( $numberOfPeople : numPeople )
+        $responder : Responder( boatCapacity >= $numberOfPeople && boatCapacity <= $numberOfPeople + 2 )
+        $mission : MissionAssignment( incident == $incident, responder == $responder )
+    then
+        int currentScore = $mission.getCompatibilityScore();
+		$mission.setCompatibilityScore( currentScore + 25 );
+end
+
 rule "The Responder can fit the EXACT number of people on their boat"
     when
         $incident : Incident( $numberOfPeople : numPeople )
@@ -166,7 +186,6 @@ rule "The Responder can fit the EXACT number of people on their boat"
     then
         int currentScore = $mission.getCompatibilityScore();
 		$mission.setCompatibilityScore( currentScore + 50 );
-
 end
 
 rule "Responder is 0 to 5km away from Incident"

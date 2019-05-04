@@ -64,7 +64,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(13);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -139,7 +139,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(13);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -221,7 +221,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(13);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -302,7 +302,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(10);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.06000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -366,7 +366,7 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 150
+     *      The MissionAssignment has a priority of 200
      *        (100 for enough capacity, 50 for distance between 10 km and 15 km)
      *      A mission is assigned to the responder
      */
@@ -384,7 +384,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(10);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.12000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -464,7 +464,7 @@ public class IncidentResponderAssignmentRulesTest {
 
         Responder responder = new Responder();
         responder.setId("responder1");
-        responder.setBoatCapacity(3);
+        responder.setBoatCapacity(13);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.15000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -527,8 +527,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 250
-     *        (100 for enough capacity, 100 for distance less than 5 km, 50 for exact capacity match)
+     *      The MissionAssignment has a priority of 300
+     *        (100 for enough capacity, 100 for distance less than 5 km, 100 for exact capacity match)
      *      A mission is assigned to the responder
      */
     @Test
@@ -546,6 +546,87 @@ public class IncidentResponderAssignmentRulesTest {
         Responder responder = new Responder();
         responder.setId("responder1");
         responder.setBoatCapacity(2);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(2));
+        incidentPriority.setAveragePriority(new BigDecimal(1.9));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+        MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
+        assertTrue(missionAssignment.getDistance() < 5000);
+        assertEquals(300, missionAssignment.getCompatibilityScore());
+        assertEquals(incident, missionAssignment.getIncident());
+        assertEquals(responder, missionAssignment.getResponder());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder.getId(), mission.getResponderId());
+        assertEquals(responder.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      There is no need for medical assistance
+     *      The responder can fit the exact number of people in their boat
+     *      The distance between the responder and the incident is less than 5 km
+     *
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     *      The MissionAssignment has a priority of 250
+     *        (100 for enough capacity, 100 for distance less than 5 km, 50 for boat capacity <= number of people + 2)
+     *      A mission is assigned to the responder
+     */
+    @Test
+    void testAssignMissionWhenBoatFitsNumberOfPeoplePlus2() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(4);
         responder.setHasMedical(false);
         responder.setLatitude(new BigDecimal("34.03000"));
         responder.setLongitude(new BigDecimal("-77.04000"));
@@ -601,6 +682,87 @@ public class IncidentResponderAssignmentRulesTest {
      *    When :
      *      There is a responder
      *      There is an incident
+     *      There is no need for medical assistance
+     *      The responder can fit the exact number of people in their boat
+     *      The distance between the responder and the incident is less than 5 km
+     *
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     *      The MissionAssignment has a priority of 225
+     *        (100 for enough capacity, 100 for distance less than 5 km, 25 for boat capacity <= number of people + 4)
+     *      A mission is assigned to the responder
+     */
+    @Test
+    void testAssignMissionWhenBoatFitsNumberOfPeoplePlus4() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(6);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(2));
+        incidentPriority.setAveragePriority(new BigDecimal(1.9));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+        MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
+        assertTrue(missionAssignment.getDistance() < 5000);
+        assertEquals(225, missionAssignment.getCompatibilityScore());
+        assertEquals(incident, missionAssignment.getIncident());
+        assertEquals(responder, missionAssignment.getResponder());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder.getId(), mission.getResponderId());
+        assertEquals(responder.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
      *      There is a need for medical assistance
      *      The responder can fit the exact number of people in their boat
      *      The responder can provide medical assistance
@@ -610,7 +772,7 @@ public class IncidentResponderAssignmentRulesTest {
      *    Then:
      *      A MissionAssignment is created
      *      The MissionAssignment has a priority of 250
-     *        (100 for enough capacity, 100 for distance less than 5 km, 50 for exact capacity match,
+     *        (100 for enough capacity, 100 for distance less than 5 km, 100 for exact capacity match,
      *         100 for the ability to provide medical assistance)
      *      A mission is assigned to the responder
      */
@@ -660,7 +822,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(350, missionAssignment.getCompatibilityScore());
+        assertEquals(400, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
