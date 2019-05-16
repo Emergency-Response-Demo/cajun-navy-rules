@@ -46,8 +46,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 200
-     *        (100 for enough capacity, 100 for distance < 5 km)
+     *      The MissionAssignment has a priority of 100
+     *        (100 for distance < 5 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -90,7 +90,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(200, missionAssignment.getCompatibilityScore());
+        assertEquals(100, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -121,8 +121,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 200
-     *        (100 for enough capacity, 100 for distance < 5 km)
+     *      The MissionAssignment has a priority of 100
+     *        (100 for distance < 5 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -172,7 +172,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(200, missionAssignment.getCompatibilityScore());
+        assertEquals(100, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -203,8 +203,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 200
-     *        (100 for enough capacity, 100 for distance < 5 km)
+     *      The MissionAssignment has a priority of 100
+     *        (100 for distance < 5 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -254,7 +254,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(200, missionAssignment.getCompatibilityScore());
+        assertEquals(100, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -284,8 +284,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 175
-     *        (100 for enough capacity, 75 for distance between 5 km and 10 km)
+     *      The MissionAssignment has a priority of 75
+     *        (75 for distance between 5 km and 10 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -336,7 +336,7 @@ public class IncidentResponderAssignmentRulesTest {
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() > 5000);
         assertTrue(missionAssignment.getDistance() < 10000);
-        assertEquals(175, missionAssignment.getCompatibilityScore());
+        assertEquals(75, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -366,8 +366,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 200
-     *        (100 for enough capacity, 50 for distance between 10 km and 15 km)
+     *      The MissionAssignment has a priority of 50
+     *        (50 for distance between 10 km and 15 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -418,7 +418,7 @@ public class IncidentResponderAssignmentRulesTest {
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() > 10000);
         assertTrue(missionAssignment.getDistance() < 15000);
-        assertEquals(150, missionAssignment.getCompatibilityScore());
+        assertEquals(50, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -446,8 +446,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 125
-     *        (100 for enough capacity, 25 for distance greater than 15 km)
+     *      The MissionAssignment has a priority of 25
+     *        (25 for distance greater than 15 km)
      *      A mission is assigned to the responder
      */
     @Test
@@ -497,7 +497,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() > 15000);
-        assertEquals(125, missionAssignment.getCompatibilityScore());
+        assertEquals(25, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -527,8 +527,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 300
-     *        (100 for enough capacity, 100 for distance less than 5 km, 100 for exact capacity match)
+     *      The MissionAssignment has a priority of 200
+     *        (100 for distance less than 5 km, 100 for exact capacity match)
      *      A mission is assigned to the responder
      */
     @Test
@@ -578,7 +578,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(300, missionAssignment.getCompatibilityScore());
+        assertEquals(200, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -608,8 +608,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 250
-     *        (100 for enough capacity, 100 for distance less than 5 km, 50 for boat capacity <= number of people + 2)
+     *      The MissionAssignment has a priority of 150
+     *        (100 for distance less than 5 km, 50 for boat capacity <= number of people + 2)
      *      A mission is assigned to the responder
      */
     @Test
@@ -659,7 +659,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(250, missionAssignment.getCompatibilityScore());
+        assertEquals(150, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -689,8 +689,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 225
-     *        (100 for enough capacity, 100 for distance less than 5 km, 25 for boat capacity <= number of people + 4)
+     *      The MissionAssignment has a priority of 125
+     *        (100 for distance less than 5 km, 25 for boat capacity <= number of people + 4)
      *      A mission is assigned to the responder
      */
     @Test
@@ -740,7 +740,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(225, missionAssignment.getCompatibilityScore());
+        assertEquals(125, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
@@ -771,8 +771,8 @@ public class IncidentResponderAssignmentRulesTest {
      *
      *    Then:
      *      A MissionAssignment is created
-     *      The MissionAssignment has a priority of 250
-     *        (100 for enough capacity, 100 for distance less than 5 km, 100 for exact capacity match,
+     *      The MissionAssignment has a priority of 300
+     *        (100 for distance less than 5 km, 100 for exact capacity match,
      *         100 for the ability to provide medical assistance)
      *      A mission is assigned to the responder
      */
@@ -822,7 +822,7 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(1, ((List)results.getValue("missionassignment")).size());
         MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
         assertTrue(missionAssignment.getDistance() < 5000);
-        assertEquals(400, missionAssignment.getCompatibilityScore());
+        assertEquals(300, missionAssignment.getCompatibilityScore());
         assertEquals(incident, missionAssignment.getIncident());
         assertEquals(responder, missionAssignment.getResponder());
 
