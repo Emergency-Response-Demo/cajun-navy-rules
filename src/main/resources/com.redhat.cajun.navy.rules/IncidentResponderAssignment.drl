@@ -20,6 +20,11 @@ declare AssignmentPredicate
     incident: String
 end
 
+declare BoatCapacityPredicate
+    incident: String
+    responder: String
+end
+
 rule "Add responders"
 	salience 200
 	when
@@ -94,11 +99,23 @@ rule "Create a AssignmentPredicate when there is a IncidentPriority for the Inci
         insert( predicate );
 end
 
-rule "Create the Mission Assignments when there is a Assignment Predicate for the incident"
+rule "Create a BoatCapacityPredicate when there is a Responder with boat capacity equal or greater than the incident number of people"
     when
         $incident : Incident()
-        $responder : Responder( boatCapacity >= $incident.numPeople )
+        $responder : Responder ( boatCapacity >= $incident.numPeople )
+    then
+        BoatCapacityPredicate predicate = new BoatCapacityPredicate();
+        predicate.setIncident($incident.getId());
+        predicate.setResponder($responder.getId());
+        insert( predicate );
+end
+
+rule "Create the Mission Assignments when there is a Assignment Predicate for the incident and a BoatCapacityPredicate for the Responder"
+    when
+        $incident : Incident()
+        $responder : Responder()
         exists AssignmentPredicate( incident == $incident.id)
+        BoatCapacityPredicate( incident == $incident.id, responder == $responder.id)
         not MissionAssignment( responder == $responder, incident == $incident )
     then
     	if ( $incident.getLatitude() == null || $incident.getLongitude() == null || 
@@ -146,16 +163,6 @@ rule "The Responder can provide medical assistance"
         int currentScore = $mission.getCompatibilityScore();
         $mission.setCompatibilityScore( currentScore + 100 );
         
-end
-
-rule "The Responder can fit the number of people on their boat"
-    when
-        $incident : Incident( $numberOfPeople : numPeople )
-        $responder : Responder( boatCapacity >= $numberOfPeople, $boatCapacity : boatCapacity )
-        $mission : MissionAssignment( incident == $incident, responder == $responder )
-    then
-        int currentScore = $mission.getCompatibilityScore();
-		$mission.setCompatibilityScore( currentScore + 100 );
 end
 
 rule "The difference between the boat capacity and the incident number of people is less than or equal to 4"
@@ -218,6 +225,15 @@ rule "Responder is more than 15km away from Incident"
 	then
 		int currentScore = $missionAssignment.getCompatibilityScore();
 		$missionAssignment.setCompatibilityScore( currentScore + 25 );
+end
+
+rule "Responder is a person"
+    when
+        $responder : Responder( person == true )
+        $missionAssignment : MissionAssignment( responder == $responder )
+    then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 100 );
 end
 
 rule "Collect the Mission Assignments for Processing"
