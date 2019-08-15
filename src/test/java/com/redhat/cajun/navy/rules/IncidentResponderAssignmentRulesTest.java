@@ -1328,7 +1328,7 @@ public class IncidentResponderAssignmentRulesTest {
      *      There is no need for medical assistance
      *      Both responders can fit the number of people in their boat
      *      The distance between the first responder and the incident is less than 5 km
-     *      The distance between the second responder and the incident is between 5 and 10 km     *
+     *      The distance between the second responder and the incident is between 5 and 10 km
      *
      *    Then:
      *      A mission is assigned to the first responder
@@ -1544,5 +1544,243 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      There is no need for medical assistance
+     *      The responder can fit the number of people in their boat
+     *      The distance between the responder and the incident is less than 5 km
+     *      The priority of the incident is equal to the average priority
+     *      The responder is a person
+     *
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     *      The MissionAssignment has a priority of 200
+     *        (100 for distance < 5 km, 100 for responder = person)
+     *      A mission is assigned to the responder
+     */
+    @Test
+    void testAssignMissionWhenDistanceLessThanFiveKmPriorityEqualToAverageResponderIsPerson() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(13);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+        responder.setPerson(true);
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(1));
+        incidentPriority.setAveragePriority(new BigDecimal(1.0));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+        MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
+        assertTrue(missionAssignment.getDistance() < 5000);
+        assertEquals(200, missionAssignment.getCompatibilityScore());
+        assertEquals(incident, missionAssignment.getIncident());
+        assertEquals(responder, missionAssignment.getResponder());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder.getId(), mission.getResponderId());
+        assertEquals(responder.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There is an incident
+     *      There is no need for medical assistance
+     *      The responder can fit the number of people in their boat
+     *      The distance between the responder and the incident is less than 5 km
+     *      The priority of the incident is equal to the average priority
+     *      The responder is not a person
+     *
+     *
+     *    Then:
+     *      A MissionAssignment is created
+     *      The MissionAssignment has a priority of 100
+     *        (100 for distance < 5 km)
+     *      A mission is assigned to the responder
+     */
+    @Test
+    void testAssignMissionWhenDistanceLessThanFiveKmPriorityEqualToAverageResponderIsNotAPerson() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder = new Responder();
+        responder.setId("responder1");
+        responder.setBoatCapacity(13);
+        responder.setHasMedical(false);
+        responder.setLatitude(new BigDecimal("34.03000"));
+        responder.setLongitude(new BigDecimal("-77.04000"));
+        responder.setPerson(false);
+
+        Responders responders = new Responders();
+        responders.add(responder);
+
+        IncidentPriority incidentPriority = new IncidentPriority();
+        incidentPriority.setIncidentId("incident1");
+        incidentPriority.setPriority(new BigDecimal(1));
+        incidentPriority.setAveragePriority(new BigDecimal(1.0));
+        incidentPriority.setIncidents(new BigDecimal(1));
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(incidentPriority));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(MissionAssignment.class), "missionassignment"));
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("missionassignment"));
+        assertTrue(results.getValue("missionassignment") instanceof List);
+        assertEquals(1, ((List)results.getValue("missionassignment")).size());
+        MissionAssignment missionAssignment = (MissionAssignment) ((List)(results.getValue("missionassignment"))).get(0);
+        assertTrue(missionAssignment.getDistance() < 5000);
+        assertEquals(100, missionAssignment.getCompatibilityScore());
+        assertEquals(incident, missionAssignment.getIncident());
+        assertEquals(responder, missionAssignment.getResponder());
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder.getId(), mission.getResponderId());
+        assertEquals(responder.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There are two responders
+     *      There is an incident
+     *      There is no need for medical assistance
+     *      Both responders can fit the number of people in their boat
+     *      The distance between the responders and the incident is less than 5 km
+     *      The second responder is a person
+     *
+     *    Then:
+     *      A mission is assigned to the second responder
+     */
+    @Test
+    void testAssignMissionToPerson() {
+
+        Incident incident = new Incident();
+        incident.setId("incident1");
+        incident.setNumPeople(2);
+        incident.setMedicalNeeded(false);
+        incident.setLatitude(new BigDecimal("34.00000"));
+        incident.setLongitude(new BigDecimal("-77.00000"));
+        incident.setReportedTime(System.currentTimeMillis());
+        incident.setReporterId("reporter1");
+
+        Responder responder1 = new Responder();
+        responder1.setId("responder1");
+        responder1.setBoatCapacity(3);
+        responder1.setHasMedical(false);
+        responder1.setLatitude(new BigDecimal("34.03000"));
+        responder1.setLongitude(new BigDecimal("-77.04000"));
+        responder1.setPerson(false);
+
+        Responder responder2 = new Responder();
+        responder2.setId("responder2");
+        responder2.setBoatCapacity(3);
+        responder2.setHasMedical(false);
+        responder2.setLatitude(new BigDecimal("34.03010"));
+        responder2.setLongitude(new BigDecimal("-77.04000"));
+        responder2.setPerson(true);
+
+        Responders responders = new Responders();
+        responders.add(responder1);
+        responders.add(responder2);
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident.getId(), mission.getIncidentId());
+        assertEquals(incident.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder2.getId(), mission.getResponderId());
+        assertEquals(responder2.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder2.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
 
 }

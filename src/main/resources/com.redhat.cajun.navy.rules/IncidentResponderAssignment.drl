@@ -227,6 +227,15 @@ rule "Responder is more than 15km away from Incident"
 		$missionAssignment.setCompatibilityScore( currentScore + 25 );
 end
 
+rule "Responder is a person"
+    when
+        $responder : Responder( person == true )
+        $missionAssignment : MissionAssignment( responder == $responder )
+    then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 100 );
+end
+
 rule "Collect the Mission Assignments for Processing"
 	salience -100
 	when
