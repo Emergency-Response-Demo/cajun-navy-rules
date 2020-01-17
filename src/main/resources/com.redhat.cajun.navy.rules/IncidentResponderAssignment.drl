@@ -236,6 +236,15 @@ rule "Responder is a person"
 		$missionAssignment.setCompatibilityScore( currentScore + 100 );
 end
 
+rule "Incident is in one or more priority zones"
+    when
+        $incidentPriority : IncidentPriority( escalated == true )
+        $missionAssignment : MissionAssignment( incident.getId() == $incidentPriority.getIncidentId() )
+    then
+		int currentScore = $missionAssignment.getCompatibilityScore();
+		$missionAssignment.setCompatibilityScore( currentScore + 200 );
+end
+
 rule "Collect the Mission Assignments for Processing"
 	salience -100
 	when

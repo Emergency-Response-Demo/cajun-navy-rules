@@ -1783,4 +1783,96 @@ public class IncidentResponderAssignmentRulesTest {
         assertEquals(Status.ASSIGNED, mission.getStatus());
     }
 
+
+    /**
+     *  Test description:
+     *
+     *    When :
+     *      There is a responder
+     *      There are two incidents
+     *      There is no need for medical assistance
+     *      Both incidents have very high priority (> 10)
+     *      The boat can fit EXACTLY the number of people from the first incident
+     *      The difference between the boat capacity and second incident's number of people is greater than 4
+     *      The distance between the responder and the first incident is less than 5 km
+     *      The distance between the responder and the second incident is more than 15 km 
+     *      The second incident is in a priority zone
+     *
+     *    Then:
+     *      A mission is created for the second incident
+     */
+    @Test
+    void testAssignMissionWhenIncidentInPriorityZone() {
+        Incident incident1 = new Incident();
+        incident1.setId("incident1");
+        incident1.setNumPeople(6);
+        incident1.setMedicalNeeded(false);
+        incident1.setLatitude(new BigDecimal("34.15000"));
+        incident1.setLongitude(new BigDecimal("-77.04000"));
+        incident1.setReportedTime(System.currentTimeMillis());
+        incident1.setReporterId("reporter1");
+
+        Incident incident2 = new Incident();
+        incident2.setId("incident2");
+        incident2.setNumPeople(1);
+        incident2.setMedicalNeeded(false);
+        incident2.setLatitude(new BigDecimal("34.00000"));
+        incident2.setLongitude(new BigDecimal("-77.00000"));
+        incident2.setReportedTime(System.currentTimeMillis());
+        incident2.setReporterId("reporter2");
+
+        IncidentPriority incident1Priority = new IncidentPriority();
+        incident1Priority.setIncidentId("incident1");
+        incident1Priority.setEscalated(false);
+        incident1Priority.setIncidents(new BigDecimal(2));
+        incident1Priority.setAveragePriority(new BigDecimal(45));
+        incident1Priority.setPriority(new BigDecimal(20));
+
+        IncidentPriority incident2Priority = new IncidentPriority();
+        incident2Priority.setIncidentId("incident2");
+        incident2Priority.setEscalated(true);
+        incident2Priority.setIncidents(new BigDecimal(2));
+        incident2Priority.setAveragePriority(new BigDecimal(45));
+        incident2Priority.setPriority(new BigDecimal(70));
+
+
+        Responder responder1 = new Responder();
+        responder1.setId("responder1");
+        responder1.setBoatCapacity(6);
+        responder1.setHasMedical(false);
+        responder1.setLatitude(new BigDecimal("34.15000"));
+        responder1.setLongitude(new BigDecimal("-77.04000"));
+        responder1.setPerson(false);
+
+        Responders responders = new Responders();
+        responders.add(responder1);
+
+        StatelessKieSession session = KCONTAINER.newStatelessKieSession( "cajun-navy-ksession");
+
+        List<Command<?>> commands = new ArrayList<>();
+        commands.add(CommandFactory.newInsert(incident1));
+        commands.add(CommandFactory.newInsert(incident2));
+        commands.add(CommandFactory.newInsert(incident1Priority));
+        commands.add(CommandFactory.newInsert(incident2Priority));
+        commands.add(CommandFactory.newInsert(responders));
+        commands.add(CommandFactory.newInsert(new Mission()));
+        commands.add(CommandFactory.newFireAllRules());
+        commands.add(CommandFactory.newGetObjects(new ClassObjectFilter(Mission.class), "mission"));
+
+        Command<?> batch = CommandFactory.newBatchExecution(commands);
+        ExecutionResults results = (ExecutionResults) session.execute(batch);
+
+        assertNotNull(results.getValue("mission"));
+        assertTrue(results.getValue("mission") instanceof List);
+        assertEquals(1, ((List)results.getValue("mission")).size());
+        Mission mission = (Mission) ((List)(results.getValue("mission"))).get(0);
+        assertEquals(incident2.getId(), mission.getIncidentId());
+        assertEquals(incident2.getLatitude(), mission.getIncidentLat());
+        assertEquals(incident2.getLongitude(), mission.getIncidentLong());
+        assertEquals(responder1.getId(), mission.getResponderId());
+        assertEquals(responder1.getLatitude(), mission.getResponderStartLat());
+        assertEquals(responder1.getLongitude(), mission.getResponderStartLong());
+        assertEquals(Status.ASSIGNED, mission.getStatus());
+    }
+
 }
