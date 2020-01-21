@@ -77,22 +77,22 @@ rule "Create a AssignmentPredicate when there is a IncidentPriority for the Inci
         insert( predicate );
 end
 
-rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but high priority"
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but high priority, as long as this incident isn't deferred by a priority zone"
     when
         $incident : Incident()
         $responders: Responders()
-        IncidentPriority ( incidentId == $incident.id, priority > 5 && <= 10, priority.compareTo(averagePriority / 2) > 0)
+        IncidentPriority ( incidentId == $incident.id, priority > 5 && <= 10, priority.compareTo(averagePriority / 2) > 0, ( escalated == true || escalatedIncidents.equals(BigDecimal.ZERO) ) )
     then
         AssignmentPredicate predicate = new AssignmentPredicate();
         predicate.setIncident($incident.getId());
         insert( predicate );
 end
 
-rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but very high priority"
+rule "Create a AssignmentPredicate when there is a IncidentPriority for the Incident with lower than average priority but very high priority, as long as this incident isn't deferred by a priority zone"
     when
         $incident : Incident()
         $responders: Responders()
-        IncidentPriority ( incidentId == $incident.id, priority > 10, priority.compareTo(averagePriority) < 0)
+        IncidentPriority ( incidentId == $incident.id, priority > 10, priority.compareTo(averagePriority) < 0, ( escalated == true || escalatedIncidents.equals(BigDecimal.ZERO) ) )
     then
         AssignmentPredicate predicate = new AssignmentPredicate();
         predicate.setIncident($incident.getId());
@@ -234,15 +234,6 @@ rule "Responder is a person"
     then
 		int currentScore = $missionAssignment.getCompatibilityScore();
 		$missionAssignment.setCompatibilityScore( currentScore + 100 );
-end
-
-rule "Incident is in one or more priority zones"
-    when
-        $incidentPriority : IncidentPriority( escalated == true )
-        $missionAssignment : MissionAssignment( incident.getId() == $incidentPriority.getIncidentId() )
-    then
-		int currentScore = $missionAssignment.getCompatibilityScore();
-		$missionAssignment.setCompatibilityScore( currentScore + 200 );
 end
 
 rule "Collect the Mission Assignments for Processing"
